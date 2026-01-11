@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from typing import Dict, List
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -91,7 +92,7 @@ def equity_figure(
                     mode="lines",
                     name=f"{label} Drawdown",
                     fill="tozeroy",
-                    hovertemplate="DD: %{y:.2%}<extra></extra>",
+                    hovertemplate="DD: %{y:,.2f}<extra></extra>",
                     line=dict(color=color, width=1, simplify=False),
                     fillcolor=with_alpha(color, 0.16),
                     hoverlabel=dict(bgcolor=color, bordercolor=color),
@@ -106,7 +107,7 @@ def equity_figure(
         fig.update_layout(
             yaxis2=dict(
                 title="Drawdown",
-                tickformat=".0%",
+                tickformat=",.0f",
                 overlaying="y",
                 side="right",
                 showgrid=False,
@@ -130,7 +131,7 @@ def drawdown_figure(series_by_label: Dict[str, SeriesPack], title: str) -> go.Fi
                 mode="lines",
                 name=f"{label} Drawdown",
                 fill="tozeroy",
-                hovertemplate="DD: %{y:.2%}<extra></extra>",
+                hovertemplate="DD: %{y:,.2f}<extra></extra>",
                 line=dict(color=color, simplify=False),
                 fillcolor=with_alpha(color, 0.2),
                 hoverlabel=dict(bgcolor=color, bordercolor=color),
@@ -139,7 +140,7 @@ def drawdown_figure(series_by_label: Dict[str, SeriesPack], title: str) -> go.Fi
 
     fig.update_layout(
         **base_layout_kwargs(title, margin=dict(l=14, r=14, t=40, b=22)),
-        yaxis=dict(title="Drawdown", tickformat=".0%"),
+        yaxis=dict(title="Drawdown", tickformat=",.0f"),
     )
     fig.update_xaxes(showgrid=False, showspikes=False, hoverformat="%Y-%m-%d")
     return fig
@@ -162,7 +163,7 @@ def rolling_correlation_figure(
     returns_by_product = {}
     for p in products:
         sp = compute_series(df, [p])
-        returns_by_product[p] = sp.returns
+        returns_by_product[p] = sp.pnl
 
     returns_df = pd.DataFrame(returns_by_product)
     dates = pd.to_datetime(df["date"])
@@ -224,7 +225,7 @@ def rolling_sharpe_figure(
     if include_individuals:
         for p in products:
             sp = compute_series(df, [p])
-            r = sp.returns
+            r = sp.pnl
             roll = (r.rolling(window).mean() / (r.rolling(window).std(ddof=1) + 1e-12)) * math.sqrt(ann)
             fig.add_trace(
                 go.Scatter(
@@ -243,7 +244,7 @@ def rolling_sharpe_figure(
 
     if include_aggregate and len(products) >= 1:
         sp_all = compute_series(df, products)
-        r = sp_all.returns
+        r = sp_all.pnl
         roll = (r.rolling(window).mean() / (r.rolling(window).std(ddof=1) + 1e-12)) * math.sqrt(ann)
         fig.add_trace(
             go.Scatter(
@@ -286,14 +287,25 @@ def seasonality_figure(
     pnl = tmp[valid_products].sum(axis=1)
     equity = pnl.cumsum()
     eq_series = pd.Series(equity.values, index=tmp["date"])
-    monthly_eq = eq_series.resample("M").last()
-    monthly_returns = monthly_eq.replace(0, pd.NA).pct_change().dropna()
+
+    # First non-zero value in each month (used as denominator)
+    first_nonzero = eq_series.resample("M").apply(lambda x: x.loc[x.ne(0)].iloc[0] if (x != 0).any() else np.nan)
+    # Last value in each month
+    last = eq_series.resample("M").last()
+    monthly_returns = (last - first_nonzero) / first_nonzero.abs()
 
     heatmap_df = monthly_returns.to_frame(name="ret")
     heatmap_df["year"] = heatmap_df.index.year
     heatmap_df["month"] = heatmap_df.index.month
     pivot = heatmap_df.pivot(index="year", columns="month", values="ret").sort_index()
     pivot = pivot.reindex(columns=range(1, 13))
+
+    # --- robust color limits (visual only) ---
+    z_values = pivot.values.flatten()
+    z_values = z_values[~np.isnan(z_values)]
+
+    z_low, z_high = np.percentile(z_values, [10, 90])
+    z_abs = max(abs(z_low), abs(z_high))  # keep symmetry around 0
 
     fig = go.Figure(
         data=go.Heatmap(
@@ -302,6 +314,8 @@ def seasonality_figure(
             y=pivot.index,
             colorscale=[[0, "#6b0f1a"], [0.5, "#1b1f2a"], [1.0, "#2ed47a"]],
             zmid=0,
+            zmin=-z_abs,
+            zmax=z_abs,
             hovertemplate="Year: %{y}<br>Month: %{x}<br>Return: %{z:.2%}<extra></extra>",
             colorbar=dict(
                 thickness=8,

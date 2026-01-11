@@ -61,7 +61,7 @@ LIGHT_HOVERLABEL = {
 }
 
 DEFAULT_RF = 0.0
-DEFAULT_ROLL_WINDOW = 63
+DEFAULT_ROLL_WINDOW = 252
 DEFAULT_POSITION_SIZE = 1.0
 
 POSITION_SIZES = {
@@ -82,8 +82,8 @@ POSITION_SIZES = {
         "Gasoil_M1/M6": 1.0,
     },
     "Machine Learning": {
-        "Brent_M3": 1.0,
-        "Gasoil_M3": 1.0,
+        "Brent_M3": 50000.0,
+        "Gasoil_M3": 5000.0,
     },
     "Short Strangle": {
         "Brent_25D": 1.0,

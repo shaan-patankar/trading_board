@@ -29,28 +29,32 @@ def compute_series(df: pd.DataFrame, products: List[str]) -> SeriesPack:
         pnl = df[products].sum(axis=1)
 
     equity = pnl.cumsum()
-    hwm = pd.Series(np.maximum.accumulate(np.maximum(equity.to_numpy(), 0.0)), index=equity.index)
+    # hwm = pd.Series(np.maximum.accumulate(np.maximum(equity.to_numpy(), 0.0)), index=equity.index)
+    hwm = equity.cummax()
 
     prev_eq = equity.shift(1).replace(0, np.nan)
     rets = (pnl / prev_eq).fillna(0.0)
 
-    dd = pd.Series(np.where(hwm.to_numpy() == 0.0, 0.0, (equity / hwm) - 1.0), index=equity.index)
+    # dd = pd.Series(np.where(hwm.to_numpy() == 0.0, 0.0, (equity / hwm) - 1.0), index=equity.index)
+    dd = equity - hwm
+    
     return SeriesPack(dates=dates, pnl=pnl, equity=equity, hwm=hwm, drawdown=dd, returns=rets)
 
 
 def annualize_factor_from_dates(dates: pd.Series) -> int:
-    if len(dates) < 3:
-        return 252
-    d = pd.to_datetime(dates)
-    deltas = d.diff().dropna().dt.days
-    med = deltas.median()
-    if pd.isna(med):
-        return 252
-    if med <= 2:
-        return 252
-    if med <= 8:
-        return 52
-    return 12
+    # if len(dates) < 3:
+    #     return 252
+    # d = pd.to_datetime(dates)
+    # deltas = d.diff().dropna().dt.days
+    # med = deltas.median()
+    # if pd.isna(med):
+    #     return 252
+    # if med <= 2:
+    #     return 252
+    # if med <= 8:
+    #     return 52
+    # return 12
+    return 252
 
 
 def padded_date_range(dates: pd.Series, pad_frac: float = 0.1) -> Optional[Tuple[pd.Timestamp, pd.Timestamp]]:
