@@ -15,23 +15,8 @@ from dashboard.analytics import (
     next_range_key,
     range_cycle_label,
 )
-from dashboard.config import (
-    DEFAULT_INITIAL_CAPITAL,
-    DEFAULT_POSITION_SIZE,
-    DEFAULT_RF,
-    DEFAULT_ROLL_WINDOW,
-    LIGHT_FONT,
-    LIGHT_HOVERLABEL,
-    PANEL_KEYS,
-)
-from dashboard.data import (
-    initial_capital_by_product,
-    initial_capital_by_strategy,
-    initial_capital_for_products,
-    initial_capital_for_strategies,
-    portfolio_dataframe,
-    products_for_strategy,
-)
+from dashboard.config import DEFAULT_RF, DEFAULT_ROLL_WINDOW, LIGHT_FONT, LIGHT_HOVERLABEL, PANEL_KEYS
+from dashboard.data import portfolio_dataframe, products_for_strategy
 from dashboard.figures import (
     drawdown_figure,
     equity_figure,
@@ -48,8 +33,6 @@ def build_metrics_table(
     strategy: str,
     selected_products: List[str],
     all_products: List[str],
-    position_sizes: Dict[str, Dict[str, float]],
-    default_size: float,
 ) -> Tuple[List[dict], List[dict]]:
     if "ALL" in selected_products:
         display_columns = [("All", all_products)]
@@ -62,10 +45,7 @@ def build_metrics_table(
 
     metrics_by_column: Dict[str, List[dict]] = {}
     for label, product_list in display_columns:
-        initial_capital = initial_capital_for_products(strategy, product_list, position_sizes, default_size)
-        if initial_capital <= 0:
-            initial_capital = DEFAULT_INITIAL_CAPITAL
-        sp = compute_series(df, product_list, initial_capital)
+        sp = compute_series(df, product_list)
         metrics_by_column[label] = compute_metrics(sp, rf_annual=DEFAULT_RF)
 
     metric_order = [row["Metric"] for row in next(iter(metrics_by_column.values()), [])]
@@ -85,8 +65,6 @@ def build_portfolio_metrics_table(
     all_strategies: List[str],
     portfolio_df: pd.DataFrame,
     strategies: Dict[str, pd.DataFrame],
-    position_sizes: Dict[str, Dict[str, float]],
-    default_size: float,
 ) -> Tuple[List[dict], List[dict]]:
     if "ALL" in selected_strategies:
         display_strategies = all_strategies
@@ -101,10 +79,7 @@ def build_portfolio_metrics_table(
 
     metrics_by_column: Dict[str, List[dict]] = {}
     for label, strategy_list in display_columns:
-        initial_capital = initial_capital_for_strategies(strategies, strategy_list, position_sizes, default_size)
-        if initial_capital <= 0:
-            initial_capital = DEFAULT_INITIAL_CAPITAL
-        sp = compute_series(portfolio_df, strategy_list, initial_capital)
+        sp = compute_series(portfolio_df, strategy_list)
         metrics_by_column[label] = compute_metrics(sp, rf_annual=DEFAULT_RF)
 
     metric_order = [row["Metric"] for row in next(iter(metrics_by_column.values()), [])]
@@ -122,8 +97,6 @@ def build_portfolio_metrics_table(
 def register_callbacks(
     app: dash.Dash,
     strategies: Dict[str, pd.DataFrame],
-    position_sizes: Dict[str, Dict[str, float]],
-    default_size: float,
 ) -> None:
     strategy_names = list(strategies.keys())
 
@@ -829,58 +802,36 @@ def register_callbacks(
             metrics_df = filter_df_by_range(portfolio_df, metrics_range)
             custom_df = filter_df_by_range(portfolio_df, custom_range)
 
-            initial_capital_total = initial_capital_for_strategies(
-                strategies,
-                selected_strategies,
-                position_sizes,
-                default_size,
-            )
-            if initial_capital_total <= 0:
-                initial_capital_total = DEFAULT_INITIAL_CAPITAL
-
-            initial_map = initial_capital_by_strategy(
-                strategies,
-                selected_strategies,
-                position_sizes,
-                default_size,
-            )
-            for strategy in selected_strategies:
-                if initial_map.get(strategy, 0.0) <= 0:
-                    initial_map[strategy] = DEFAULT_INITIAL_CAPITAL
-
             if "ALL" in selected_products:
                 equity_series = {
                     "All Strategies": compute_series(
                         equity_df,
                         selected_strategies,
-                        initial_capital_total,
                     )
                 }
                 drawdown_series = {
                     "All Strategies": compute_series(
                         drawdown_df,
                         selected_strategies,
-                        initial_capital_total,
                     )
                 }
                 equity_drawdown_series = {
                     "All Strategies": compute_series(
                         drawdown_df_for_equity,
                         selected_strategies,
-                        initial_capital_total,
                     )
                 }
             else:
                 equity_series = {
-                    s: compute_series(equity_df, [s], initial_map.get(s, DEFAULT_INITIAL_CAPITAL))
+                    s: compute_series(equity_df, [s])
                     for s in selected_strategies
                 }
                 drawdown_series = {
-                    s: compute_series(drawdown_df, [s], initial_map.get(s, DEFAULT_INITIAL_CAPITAL))
+                    s: compute_series(drawdown_df, [s])
                     for s in selected_strategies
                 }
                 equity_drawdown_series = {
-                    s: compute_series(drawdown_df_for_equity, [s], initial_map.get(s, DEFAULT_INITIAL_CAPITAL))
+                    s: compute_series(drawdown_df_for_equity, [s])
                     for s in selected_strategies
                 }
 
@@ -896,8 +847,6 @@ def register_callbacks(
                 all_strategies,
                 metrics_df,
                 strategies,
-                position_sizes,
-                default_size,
             )
 
             show_individuals = "ALL" not in selected_products
@@ -906,8 +855,6 @@ def register_callbacks(
                 eq_fig = rolling_sharpe_figure(
                     equity_df,
                     selected_strategies,
-                    initial_map,
-                    initial_capital_total,
                     DEFAULT_ROLL_WINDOW,
                     title="",
                     include_individuals=show_individuals,
@@ -916,13 +863,11 @@ def register_callbacks(
                 custom_fig = seasonality_figure(
                     custom_df,
                     selected_strategies,
-                    initial_capital_total,
                     title="",
                 )
                 dd_fig = rolling_correlation_figure(
                     drawdown_df,
                     selected_strategies,
-                    initial_map,
                     DEFAULT_ROLL_WINDOW,
                     title="",
                 )
@@ -930,8 +875,6 @@ def register_callbacks(
                 custom_fig = rolling_sharpe_figure(
                     custom_df,
                     selected_strategies,
-                    initial_map,
-                    initial_capital_total,
                     DEFAULT_ROLL_WINDOW,
                     title="",
                     include_individuals=show_individuals,
@@ -941,14 +884,12 @@ def register_callbacks(
                 custom_fig = seasonality_figure(
                     custom_df,
                     selected_strategies,
-                    initial_capital_total,
                     title="",
                 )
             else:
                 custom_fig = rolling_correlation_figure(
                     custom_df,
                     selected_strategies,
-                    initial_map,
                     DEFAULT_ROLL_WINDOW,
                     title="",
                 )
@@ -1019,34 +960,25 @@ def register_callbacks(
         metrics_df = filter_df_by_range(df, metrics_range)
         custom_df = filter_df_by_range(df, custom_range)
 
-        initial_capital_total = initial_capital_for_products(strategy, products, position_sizes, default_size)
-        if initial_capital_total <= 0:
-            initial_capital_total = DEFAULT_INITIAL_CAPITAL
-        initial_map = initial_capital_by_product(strategy, products, position_sizes, default_size)
-        for product in products:
-            if initial_map.get(product, 0.0) <= 0:
-                initial_map[product] = DEFAULT_INITIAL_CAPITAL
-
         if "ALL" in selected_products:
-            equity_series = {"All Products": compute_series(equity_df, products, initial_capital_total)}
-            drawdown_series = {"All Products": compute_series(drawdown_df, products, initial_capital_total)}
+            equity_series = {"All Products": compute_series(equity_df, products)}
+            drawdown_series = {"All Products": compute_series(drawdown_df, products)}
             equity_drawdown_series = {
-                "All Products": compute_series(drawdown_df_for_equity, products, initial_capital_total)
+                "All Products": compute_series(drawdown_df_for_equity, products)
             }
         else:
             equity_series = {
-                format_product_label(p): compute_series(equity_df, [p], initial_map.get(p, DEFAULT_INITIAL_CAPITAL))
+                format_product_label(p): compute_series(equity_df, [p])
                 for p in products
             }
             drawdown_series = {
-                format_product_label(p): compute_series(drawdown_df, [p], initial_map.get(p, DEFAULT_INITIAL_CAPITAL))
+                format_product_label(p): compute_series(drawdown_df, [p])
                 for p in products
             }
             equity_drawdown_series = {
                 format_product_label(p): compute_series(
                     drawdown_df_for_equity,
                     [p],
-                    initial_map.get(p, DEFAULT_INITIAL_CAPITAL),
                 )
                 for p in products
             }
@@ -1064,8 +996,6 @@ def register_callbacks(
             strategy,
             selected_products,
             all_products,
-            position_sizes,
-            default_size,
         )
 
         show_individuals = "ALL" not in selected_products
@@ -1074,8 +1004,6 @@ def register_callbacks(
             eq_fig = rolling_sharpe_figure(
                 equity_df,
                 products,
-                initial_map,
-                initial_capital_total,
                 DEFAULT_ROLL_WINDOW,
                 title="",
                 include_individuals=show_individuals,
@@ -1084,13 +1012,11 @@ def register_callbacks(
             custom_fig = seasonality_figure(
                 custom_df,
                 products,
-                initial_capital_total,
                 title="",
             )
             dd_fig = rolling_correlation_figure(
                 drawdown_df,
                 products,
-                initial_map,
                 DEFAULT_ROLL_WINDOW,
                 title="",
             )
@@ -1098,8 +1024,6 @@ def register_callbacks(
             custom_fig = rolling_sharpe_figure(
                 custom_df,
                 products,
-                initial_map,
-                initial_capital_total,
                 DEFAULT_ROLL_WINDOW,
                 title="",
                 include_individuals=show_individuals,
@@ -1109,14 +1033,12 @@ def register_callbacks(
             custom_fig = seasonality_figure(
                 custom_df,
                 products,
-                initial_capital_total,
                 title="",
             )
         else:
             custom_fig = rolling_correlation_figure(
                 custom_df,
                 products,
-                initial_map,
                 DEFAULT_ROLL_WINDOW,
                 title="",
             )

@@ -20,7 +20,7 @@ class SeriesPack:
     returns: pd.Series
 
 
-def compute_series(df: pd.DataFrame, products: List[str], initial_capital: float) -> SeriesPack:
+def compute_series(df: pd.DataFrame, products: List[str]) -> SeriesPack:
     dates = df["date"]
 
     if len(products) == 0:
@@ -28,13 +28,13 @@ def compute_series(df: pd.DataFrame, products: List[str], initial_capital: float
     else:
         pnl = df[products].sum(axis=1)
 
-    equity = initial_capital + pnl.cumsum()
-    hwm = equity.cummax()
+    equity = pnl.cumsum()
+    hwm = pd.Series(np.maximum.accumulate(np.maximum(equity.to_numpy(), 0.0)), index=equity.index)
 
     prev_eq = equity.shift(1).replace(0, np.nan)
     rets = (pnl / prev_eq).fillna(0.0)
 
-    dd = (equity / hwm) - 1.0
+    dd = pd.Series(np.where(hwm.to_numpy() == 0.0, 0.0, (equity / hwm) - 1.0), index=equity.index)
     return SeriesPack(dates=dates, pnl=pnl, equity=equity, hwm=hwm, drawdown=dd, returns=rets)
 
 
