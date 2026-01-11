@@ -705,12 +705,33 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
         def apply_light_theme(figs: List[go.Figure]) -> None:
             if theme_value != "light":
                 return
+            light_heatmap_scale = [
+                [0.0, "#c65a67"],
+                [0.5, "#f6f8fc"],
+                [1.0, "#2f8f83"],
+            ]
             for fig in figs:
                 fig.update_layout(
                     template="plotly_white",
                     font=LIGHT_FONT,
                     hoverlabel=LIGHT_HOVERLABEL,
                 )
+                for trace in fig.data:
+                    if trace.type == "heatmap":
+                        trace.update(
+                            colorscale=light_heatmap_scale,
+                            zmid=0,
+                            colorbar=dict(
+                                thickness=8,
+                                len=0.82,
+                                y=0.5,
+                                yanchor="middle",
+                                x=1.02,
+                                xanchor="left",
+                                tickfont=dict(color=LIGHT_FONT["color"], size=10),
+                                outlinewidth=0,
+                            ),
+                        )
 
         layout_value = layout_value or "default"
         combine_drawdown = layout_value == "focused"

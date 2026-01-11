@@ -145,6 +145,10 @@ html, body {
   stroke: currentColor;
 }
 
+.settings-gear-svg {
+  filter: brightness(0) invert(1);
+}
+
 /* ---------- Main Grid ---------- */
 
 .body-grid {
@@ -1371,6 +1375,10 @@ html, body {
   color: var(--text);
 }
 
+.app-root.theme-light .settings-gear-svg {
+  filter: none;
+}
+
 .app-root.theme-light .sidebar-toggle-btn,
 .app-root.theme-light .settings-toggle-btn {
   border: 1px solid rgba(150, 168, 196, 0.55);
@@ -1428,12 +1436,18 @@ html, body {
 
 .app-root.theme-light .custom-tabs .nav-link {
   color: var(--muted);
+  background: linear-gradient(135deg, rgba(246, 248, 252, 0.96), rgba(231, 237, 248, 0.92));
+  border: 1px solid rgba(150, 168, 196, 0.45);
+  box-shadow: 0 4px 12px rgba(30, 52, 90, 0.1);
 }
 
 .app-root.theme-light .custom-tabs .nav-link.active,
 .app-root.theme-light .custom-tabs .nav-link:hover,
 .app-root.theme-light .custom-tabs .nav-link:focus-visible {
   color: var(--text);
+  background: linear-gradient(135deg, rgba(226, 235, 250, 0.98), rgba(206, 220, 246, 0.96));
+  border-color: rgba(110, 140, 198, 0.7);
+  box-shadow: 0 10px 22px rgba(35, 80, 160, 0.18);
 }
 
 .app-root.theme-light .metrics-table-wrapper .dash-spreadsheet td,
@@ -1471,6 +1485,10 @@ html, body {
 
 .app-root.theme-light .sidebar .offcanvas-header {
   border-bottom: 1px solid rgba(150, 168, 196, 0.35);
+}
+
+.app-root.theme-light .sidebar .offcanvas-title {
+  color: var(--text);
 }
 
 .app-root.theme-light .sidebar-section-title {
