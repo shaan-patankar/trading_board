@@ -14,7 +14,7 @@ from dashboard.analytics import (
     compute_series,
     padded_date_range,
 )
-from dashboard.config import BASE_BACKGROUND, BASE_FONT, BASE_HOVERLABEL, DEFAULT_INITIAL_CAPITAL
+from dashboard.config import BASE_BACKGROUND, BASE_FONT, BASE_HOVERLABEL
 from dashboard.utils import format_product_label
 
 
@@ -148,7 +148,6 @@ def drawdown_figure(series_by_label: Dict[str, SeriesPack], title: str) -> go.Fi
 def rolling_correlation_figure(
     df: pd.DataFrame,
     products: List[str],
-    initial_capital_by_product: Dict[str, float],
     window: int,
     title: str,
 ) -> go.Figure:
@@ -162,7 +161,7 @@ def rolling_correlation_figure(
 
     returns_by_product = {}
     for p in products:
-        sp = compute_series(df, [p], initial_capital_by_product.get(p, DEFAULT_INITIAL_CAPITAL))
+        sp = compute_series(df, [p])
         returns_by_product[p] = sp.returns
 
     returns_df = pd.DataFrame(returns_by_product)
@@ -206,8 +205,6 @@ def rolling_correlation_figure(
 def rolling_sharpe_figure(
     df: pd.DataFrame,
     products: List[str],
-    initial_capital_by_product: Dict[str, float],
-    aggregate_initial_capital: float,
     window: int,
     title: str,
     *,
@@ -226,7 +223,7 @@ def rolling_sharpe_figure(
     color_map_by_label = color_map(label_order)
     if include_individuals:
         for p in products:
-            sp = compute_series(df, [p], initial_capital_by_product.get(p, DEFAULT_INITIAL_CAPITAL))
+            sp = compute_series(df, [p])
             r = sp.returns
             roll = (r.rolling(window).mean() / (r.rolling(window).std(ddof=1) + 1e-12)) * math.sqrt(ann)
             fig.add_trace(
@@ -245,7 +242,7 @@ def rolling_sharpe_figure(
             )
 
     if include_aggregate and len(products) >= 1:
-        sp_all = compute_series(df, products, aggregate_initial_capital)
+        sp_all = compute_series(df, products)
         r = sp_all.returns
         roll = (r.rolling(window).mean() / (r.rolling(window).std(ddof=1) + 1e-12)) * math.sqrt(ann)
         fig.add_trace(
@@ -278,7 +275,6 @@ def rolling_sharpe_figure(
 def seasonality_figure(
     df: pd.DataFrame,
     products: List[str],
-    initial_capital: float,
     title: str,
 ) -> go.Figure:
     valid_products = [p for p in products if p in df.columns and p != "date"]
@@ -288,10 +284,10 @@ def seasonality_figure(
     tmp = df[["date"] + valid_products].copy()
     tmp["date"] = pd.to_datetime(tmp["date"])
     pnl = tmp[valid_products].sum(axis=1)
-    equity = initial_capital + pnl.cumsum()
+    equity = pnl.cumsum()
     eq_series = pd.Series(equity.values, index=tmp["date"])
     monthly_eq = eq_series.resample("M").last()
-    monthly_returns = monthly_eq.pct_change().dropna()
+    monthly_returns = monthly_eq.replace(0, pd.NA).pct_change().dropna()
 
     heatmap_df = monthly_returns.to_frame(name="ret")
     heatmap_df["year"] = heatmap_df.index.year

@@ -60,7 +60,6 @@ LIGHT_HOVERLABEL = {
     "font": {"color": "#1f2a3a", "size": 12, "family": "Inter, 'Segoe UI', system-ui"},
 }
 
-DEFAULT_INITIAL_CAPITAL = 100.0
 DEFAULT_RF = 0.0
 DEFAULT_ROLL_WINDOW = 63
 DEFAULT_POSITION_SIZE = 1.0

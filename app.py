@@ -24,7 +24,7 @@ server = app.server
 products = products_for_strategy(STRATEGIES, DEFAULT_STRATEGY)
 app.layout = build_layout(STRATEGY_NAMES, DEFAULT_STRATEGY, products)
 
-register_callbacks(app, STRATEGIES, POSITION_SIZES, DEFAULT_POSITION_SIZE)
+register_callbacks(app, STRATEGIES)
 
 if __name__ == "__main__":
     app.run(debug=False, host="127.0.0.1", port=8050)
