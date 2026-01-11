@@ -51,3 +51,4 @@ Then open: `http://127.0.0.1:8050`
 - Add more strategies in `load_strategies()` (read more CSVs).
 - Add more custom analytics tabs in `Custom Analytics`.
 - If you prefer PnL to be treated as % returns, we can add a toggle and change aggregation logic.
+- Per-unit PnL columns are scaled by position sizes defined in `dashboard/config.py` (`POSITION_SIZES`).
