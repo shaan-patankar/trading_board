@@ -30,11 +30,99 @@ def read_strategy_csv(path: Path) -> pd.DataFrame:
     return df
 
 
-def load_strategies(strategy_files: Dict[str, Path], logger: logging.Logger) -> Dict[str, pd.DataFrame]:
+def apply_position_sizes(
+    df: pd.DataFrame,
+    strategy: str,
+    position_sizes: Dict[str, Dict[str, float]],
+    default_size: float = 1.0,
+) -> pd.DataFrame:
+    if df is None or df.empty:
+        return df
+
+    sizes = position_sizes.get(strategy, {})
+    product_cols = [c for c in df.columns if c != "date"]
+    if not sizes and default_size == 1.0:
+        return df
+
+    scaled = df.copy()
+    for col in product_cols:
+        size = float(sizes.get(col, default_size))
+        scaled[col] = scaled[col] * size
+    return scaled
+
+
+def initial_capital_for_products(
+    strategy: str,
+    products: List[str],
+    position_sizes: Dict[str, Dict[str, float]],
+    default_size: float = 1.0,
+) -> float:
+    sizes = position_sizes.get(strategy, {})
+    if not sizes:
+        return 0.0
+    return float(sum(float(sizes.get(product, default_size)) for product in products))
+
+
+def initial_capital_by_product(
+    strategy: str,
+    products: List[str],
+    position_sizes: Dict[str, Dict[str, float]],
+    default_size: float = 1.0,
+) -> Dict[str, float]:
+    sizes = position_sizes.get(strategy, {})
+    if not sizes:
+        return {}
+    return {product: float(sizes.get(product, default_size)) for product in products}
+
+
+def initial_capital_by_strategy(
+    strategies: Dict[str, pd.DataFrame],
+    selected_strategies: List[str],
+    position_sizes: Dict[str, Dict[str, float]],
+    default_size: float = 1.0,
+) -> Dict[str, float]:
+    initial_map: Dict[str, float] = {}
+    for strategy in selected_strategies:
+        products = products_for_strategy(strategies, strategy)
+        initial_map[strategy] = initial_capital_for_products(
+            strategy,
+            products,
+            position_sizes,
+            default_size,
+        )
+    return initial_map
+
+
+def initial_capital_for_strategies(
+    strategies: Dict[str, pd.DataFrame],
+    selected_strategies: List[str],
+    position_sizes: Dict[str, Dict[str, float]],
+    default_size: float = 1.0,
+) -> float:
+    return float(
+        sum(
+            initial_capital_for_products(
+                strategy,
+                products_for_strategy(strategies, strategy),
+                position_sizes,
+                default_size,
+            )
+            for strategy in selected_strategies
+        )
+    )
+
+
+def load_strategies(
+    strategy_files: Dict[str, Path],
+    logger: logging.Logger,
+    position_sizes: Dict[str, Dict[str, float]],
+    default_size: float = 1.0,
+) -> Dict[str, pd.DataFrame]:
     strategies: Dict[str, pd.DataFrame] = {}
     for name, path in strategy_files.items():
         try:
-            strategies[name] = read_strategy_csv(path)
+            df = read_strategy_csv(path)
+            strategies[name] = apply_position_sizes(df, name, position_sizes, default_size)
         except FileNotFoundError:
             logger.warning("Missing CSV for %s: %s", name, path)
         except ValueError as exc:

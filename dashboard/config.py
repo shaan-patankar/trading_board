@@ -63,3 +63,41 @@ LIGHT_HOVERLABEL = {
 DEFAULT_INITIAL_CAPITAL = 100.0
 DEFAULT_RF = 0.0
 DEFAULT_ROLL_WINDOW = 63
+DEFAULT_POSITION_SIZE = 1.0
+
+POSITION_SIZES = {
+    "Momentum": {
+        "Brent_M3": 1.0,
+        "Brent_M3/M6": 1.0,
+        "Gasoil_M3": 1.0,
+        "Gasoil_M3/M6": 1.0,
+        "Fuel_Oil_3.5%_Rdam_Crack_M3": 1.0,
+    },
+    "Mean Reversion": {
+        "WTI/Brent_M1": 1.0,
+        "Heating_Oil/Gasoil_M1": 1.0,
+        "RBOB/EBOB_M1": 1.0,
+    },
+    "Carry": {
+        "Brent_M1/M6": 1.0,
+        "Gasoil_M1/M6": 1.0,
+    },
+    "Machine Learning": {
+        "Brent_M3": 1.0,
+        "Gasoil_M3": 1.0,
+    },
+    "Short Strangle": {
+        "Brent_25D": 1.0,
+        "RBOB_25D": 1.0,
+        "ULSD_25D": 1.0,
+    },
+    "Sprite Pepsi": {
+        "Brent_25D": 1.0,
+    },
+    "Intraweek Seasonality": {
+        "Tue_1_Brent_M1": 1.0,
+        "Tue_2_Brent_M1": 1.0,
+        "Fri_1_Brent_M1": 1.0,
+        "Fri_2_Brent_M1": 1.0,
+    },
+}

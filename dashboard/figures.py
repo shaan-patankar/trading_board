@@ -146,7 +146,11 @@ def drawdown_figure(series_by_label: Dict[str, SeriesPack], title: str) -> go.Fi
 
 
 def rolling_correlation_figure(
-    df: pd.DataFrame, products: List[str], initial_capital: float, window: int, title: str
+    df: pd.DataFrame,
+    products: List[str],
+    initial_capital_by_product: Dict[str, float],
+    window: int,
+    title: str,
 ) -> go.Figure:
     fig = go.Figure()
 
@@ -158,7 +162,7 @@ def rolling_correlation_figure(
 
     returns_by_product = {}
     for p in products:
-        sp = compute_series(df, [p], initial_capital)
+        sp = compute_series(df, [p], initial_capital_by_product.get(p, DEFAULT_INITIAL_CAPITAL))
         returns_by_product[p] = sp.returns
 
     returns_df = pd.DataFrame(returns_by_product)
@@ -202,7 +206,8 @@ def rolling_correlation_figure(
 def rolling_sharpe_figure(
     df: pd.DataFrame,
     products: List[str],
-    initial_capital: float,
+    initial_capital_by_product: Dict[str, float],
+    aggregate_initial_capital: float,
     window: int,
     title: str,
     *,
@@ -221,7 +226,7 @@ def rolling_sharpe_figure(
     color_map_by_label = color_map(label_order)
     if include_individuals:
         for p in products:
-            sp = compute_series(df, [p], initial_capital)
+            sp = compute_series(df, [p], initial_capital_by_product.get(p, DEFAULT_INITIAL_CAPITAL))
             r = sp.returns
             roll = (r.rolling(window).mean() / (r.rolling(window).std(ddof=1) + 1e-12)) * math.sqrt(ann)
             fig.add_trace(
@@ -240,7 +245,7 @@ def rolling_sharpe_figure(
             )
 
     if include_aggregate and len(products) > 1:
-        sp_all = compute_series(df, products, initial_capital)
+        sp_all = compute_series(df, products, aggregate_initial_capital)
         r = sp_all.returns
         roll = (r.rolling(window).mean() / (r.rolling(window).std(ddof=1) + 1e-12)) * math.sqrt(ann)
         fig.add_trace(
@@ -270,7 +275,12 @@ def rolling_sharpe_figure(
     return fig
 
 
-def seasonality_figure(df: pd.DataFrame, products: List[str], title: str) -> go.Figure:
+def seasonality_figure(
+    df: pd.DataFrame,
+    products: List[str],
+    initial_capital: float,
+    title: str,
+) -> go.Figure:
     valid_products = [p for p in products if p in df.columns and p != "date"]
     if len(valid_products) == 0:
         valid_products = [c for c in df.columns if c != "date"]
@@ -278,7 +288,7 @@ def seasonality_figure(df: pd.DataFrame, products: List[str], title: str) -> go.
     tmp = df[["date"] + valid_products].copy()
     tmp["date"] = pd.to_datetime(tmp["date"])
     pnl = tmp[valid_products].sum(axis=1)
-    equity = DEFAULT_INITIAL_CAPITAL + pnl.cumsum()
+    equity = initial_capital + pnl.cumsum()
     eq_series = pd.Series(equity.values, index=tmp["date"])
     monthly_eq = eq_series.resample("M").last()
     monthly_returns = monthly_eq.pct_change().dropna()
