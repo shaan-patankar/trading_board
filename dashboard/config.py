@@ -30,7 +30,7 @@ LAYOUT_OPTIONS = [
 PANEL_KEYS = ["equity", "custom", "drawdown", "metrics"]
 SETTINGS_GEAR_SVG = "data:image/svg+xml;utf8," + quote(
     """
-<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"
     xmlns="http://www.w3.org/2000/svg">
     <circle cx="12" cy="12" r="3"/>
@@ -48,6 +48,15 @@ BASE_HOVERLABEL = {
     "bgcolor": "#151c2c",
     "bordercolor": "#6f7c95",
     "font": {"color": "#e6e9f0", "size": 12, "family": "Inter, 'Segoe UI', system-ui"},
+}
+LIGHT_FONT = {
+    "family": "Inter, 'Segoe UI', system-ui",
+    "color": "#1f2a3a",
+}
+LIGHT_HOVERLABEL = {
+    "bgcolor": "#f4f7fb",
+    "bordercolor": "#c2cede",
+    "font": {"color": "#1f2a3a", "size": 12, "family": "Inter, 'Segoe UI', system-ui"},
 }
 
 DEFAULT_INITIAL_CAPITAL = 100.0
