@@ -59,6 +59,18 @@ def build_layout(strategy_names: List[str], default_strategy: str, products: Lis
             dcc.Store(id="store-selected-csv", data=default_csv),
             dcc.Store(id="store-csv-modal-open", data=False),
             html.Div(
+                dbc.RadioItems(
+                    id="theme-radio",
+                    options=[
+                        {"label": "Dark", "value": "dark"},
+                        {"label": "Light", "value": "light"},
+                    ],
+                    value="dark",
+                    className="settings-radio",
+                ),
+                style={"display": "none"},
+            ),
+            html.Div(
                 className="topbar",
                 children=[
                     dbc.Button(
@@ -167,21 +179,6 @@ def build_layout(strategy_names: List[str], default_strategy: str, products: Lis
                                         id="layout-radio",
                                         options=LAYOUT_OPTIONS,
                                         value="default",
-                                        className="settings-radio",
-                                    ),
-                                ],
-                            ),
-                            html.Div(
-                                className="sidebar-section",
-                                children=[
-                                    html.Div("Theme", className="sidebar-section-title"),
-                                    dbc.RadioItems(
-                                        id="theme-radio",
-                                        options=[
-                                            {"label": "Dark", "value": "dark"},
-                                            {"label": "Light", "value": "light"},
-                                        ],
-                                        value="dark",
                                         className="settings-radio",
                                     ),
                                 ],
