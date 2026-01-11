@@ -220,7 +220,7 @@ def rolling_sharpe_figure(
     label_order: List[str] = []
     if include_individuals:
         label_order.extend([format_product_label(p) for p in products])
-    if include_aggregate and len(products) > 1:
+    if include_aggregate and len(products) >= 1:
         label_order.append("ALL (agg)")
 
     color_map_by_label = color_map(label_order)
@@ -244,7 +244,7 @@ def rolling_sharpe_figure(
                 )
             )
 
-    if include_aggregate and len(products) > 1:
+    if include_aggregate and len(products) >= 1:
         sp_all = compute_series(df, products, aggregate_initial_capital)
         r = sp_all.returns
         roll = (r.rolling(window).mean() / (r.rolling(window).std(ddof=1) + 1e-12)) * math.sqrt(ann)
