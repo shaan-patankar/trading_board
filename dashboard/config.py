@@ -11,6 +11,7 @@ STRATEGY_FILES = {
     "Carry": DATA_DIR / "carry_pnls.csv",
     "Machine Learning": DATA_DIR / "machine_learning_pnls.csv",
     "Short Strangle": DATA_DIR / "short_strangle_pnls.csv",
+    "Sprite Pepsi": DATA_DIR / "pepsi_coke.csv",
 }
 
 GRAPH_CONFIG = {
