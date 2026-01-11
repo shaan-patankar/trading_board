@@ -201,6 +201,19 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
         return " ".join(classes)
 
     @app.callback(
+        Output("sidebar", "className"),
+        Output("settings-sidebar", "className"),
+        Input("theme-radio", "value"),
+    )
+    def update_sidebar_theme(theme_value):
+        sidebar_class = "sidebar"
+        settings_sidebar_class = "sidebar settings-sidebar"
+        if theme_value == "light":
+            sidebar_class = f"{sidebar_class} theme-light"
+            settings_sidebar_class = f"{settings_sidebar_class} theme-light"
+        return sidebar_class, settings_sidebar_class
+
+    @app.callback(
         Output("panel-visibility", "value"),
         Output("store-last-deselected", "data"),
         Input("panel-visibility", "value"),
