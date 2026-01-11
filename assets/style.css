@@ -1009,11 +1009,11 @@ html, body {
   z-index: 0;
 }
 
-.equity-modal-overlay *,
-.drawdown-modal-overlay *,
-.metrics-modal-overlay *,
-.custom-analytics-modal-overlay *,
-.csv-modal-overlay * {
+.equity-modal-overlay:not(.open) *,
+.drawdown-modal-overlay:not(.open) *,
+.metrics-modal-overlay:not(.open) *,
+.custom-analytics-modal-overlay:not(.open) *,
+.csv-modal-overlay:not(.open) * {
   pointer-events: none;
 }
 
@@ -1212,14 +1212,6 @@ html, body {
   pointer-events: auto;
   backdrop-filter: blur(14px);
   visibility: visible;
-}
-
-.equity-modal-overlay.open *,
-.drawdown-modal-overlay.open *,
-.metrics-modal-overlay.open *,
-.custom-analytics-modal-overlay.open *,
-.csv-modal-overlay.open * {
-  pointer-events: auto;
 }
 
 /* ---------- CSV Modal ---------- */
