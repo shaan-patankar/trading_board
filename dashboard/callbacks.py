@@ -6,6 +6,7 @@ import dash
 from dash import Input, Output, State, callback_context, html
 import dash_bootstrap_components as dbc
 import pandas as pd
+import plotly.graph_objects as go
 
 from dashboard.analytics import (
     compute_metrics,
@@ -14,7 +15,14 @@ from dashboard.analytics import (
     next_range_key,
     range_cycle_label,
 )
-from dashboard.config import DEFAULT_INITIAL_CAPITAL, DEFAULT_RF, DEFAULT_ROLL_WINDOW, PANEL_KEYS
+from dashboard.config import (
+    DEFAULT_INITIAL_CAPITAL,
+    DEFAULT_RF,
+    DEFAULT_ROLL_WINDOW,
+    LIGHT_FONT,
+    LIGHT_HOVERLABEL,
+    PANEL_KEYS,
+)
 from dashboard.data import portfolio_dataframe, products_for_strategy
 from dashboard.figures import (
     drawdown_figure,
@@ -163,6 +171,7 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
         Input("store-metrics-modal-open", "data"),
         Input("store-custom-analytics-modal-open", "data"),
         Input("store-csv-modal-open", "data"),
+        Input("theme-radio", "value"),
     )
     def dim_background(
         is_open,
@@ -172,9 +181,11 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
         metrics_modal_open,
         custom_analytics_open,
         csv_modal_open,
+        theme_value,
     ):
-        base_class = "app-root"
-        classes = [base_class]
+        classes = ["app-root"]
+        if theme_value == "light":
+            classes.append("theme-light")
         if is_open or settings_open:
             classes.append("sidebar-visible")
         if equity_modal_open:
@@ -678,6 +689,7 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
         Input("store-drawdown-range", "data"),
         Input("store-metrics-range", "data"),
         Input("store-custom-range", "data"),
+        Input("theme-radio", "value"),
     )
     def update_dashboard(
         strategy,
@@ -688,7 +700,18 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
         drawdown_range,
         metrics_range,
         custom_range,
+        theme_value,
     ):
+        def apply_light_theme(figs: List[go.Figure]) -> None:
+            if theme_value != "light":
+                return
+            for fig in figs:
+                fig.update_layout(
+                    template="plotly_white",
+                    font=LIGHT_FONT,
+                    hoverlabel=LIGHT_HOVERLABEL,
+                )
+
         layout_value = layout_value or "default"
         combine_drawdown = layout_value == "focused"
         if layout_value == "analytics":
@@ -720,6 +743,7 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
                 eq_fig = placeholder_figure(placeholder_title, subtitle)
                 dd_fig = placeholder_figure("Drawdowns will display once data is connected.")
                 custom_fig = placeholder_figure("Custom analytics will appear here.")
+                apply_light_theme([eq_fig, dd_fig, custom_fig])
                 return (
                     "Portfolio",
                     equity_title,
@@ -839,6 +863,7 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
                     autosize=True,
                     margin=dict(l=14, r=14, t=40, b=22),
                 )
+            apply_light_theme([eq_fig, dd_fig, custom_fig])
 
             return (
                 "Portfolio",
@@ -869,6 +894,7 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
             eq_fig = placeholder_figure(placeholder_title, subtitle)
             dd_fig = placeholder_figure("Drawdowns will display once data is connected.")
             custom_fig = placeholder_figure("Custom analytics will appear here.")
+            apply_light_theme([eq_fig, dd_fig, custom_fig])
             return (
                 "Portfolio",
                 equity_title,
@@ -974,6 +1000,7 @@ def register_callbacks(app: dash.Dash, strategies: Dict[str, pd.DataFrame]) -> N
                 autosize=True,
                 margin=dict(l=14, r=14, t=40, b=22),
             )
+        apply_light_theme([eq_fig, dd_fig, custom_fig])
 
         return (
             title_text,

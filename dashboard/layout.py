@@ -174,6 +174,21 @@ def build_layout(strategy_names: List[str], default_strategy: str, products: Lis
                             html.Div(
                                 className="sidebar-section",
                                 children=[
+                                    html.Div("Theme", className="sidebar-section-title"),
+                                    dbc.RadioItems(
+                                        id="theme-radio",
+                                        options=[
+                                            {"label": "Dark", "value": "dark"},
+                                            {"label": "Light", "value": "light"},
+                                        ],
+                                        value="dark",
+                                        className="settings-radio",
+                                    ),
+                                ],
+                            ),
+                            html.Div(
+                                className="sidebar-section",
+                                children=[
                                     html.Div("Panels", className="sidebar-section-title"),
                                     dbc.Checklist(
                                         id="panel-visibility",
