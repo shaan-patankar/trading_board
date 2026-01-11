@@ -1472,26 +1472,31 @@ html, body {
   box-shadow: 0 10px 24px rgba(30, 52, 90, 0.12);
 }
 
-.app-root.theme-light .sidebar {
+.app-root.theme-light .sidebar,
+.sidebar.theme-light {
   background: linear-gradient(180deg, rgba(248, 250, 254, 0.98), rgba(231, 237, 248, 0.98));
   border-color: rgba(150, 168, 196, 0.45);
   box-shadow: 14px 0 42px rgba(30, 52, 90, 0.16);
 }
 
-.app-root.theme-light .settings-sidebar {
+.app-root.theme-light .settings-sidebar,
+.settings-sidebar.theme-light {
   border-left-color: rgba(150, 168, 196, 0.45);
   box-shadow: -14px 0 42px rgba(30, 52, 90, 0.16);
 }
 
-.app-root.theme-light .sidebar .offcanvas-header {
+.app-root.theme-light .sidebar .offcanvas-header,
+.sidebar.theme-light .offcanvas-header {
   border-bottom: 1px solid rgba(150, 168, 196, 0.35);
 }
 
-.app-root.theme-light .sidebar .offcanvas-title {
+.app-root.theme-light .sidebar .offcanvas-title,
+.sidebar.theme-light .offcanvas-title {
   color: var(--text);
 }
 
-.app-root.theme-light .sidebar-section-title {
+.app-root.theme-light .sidebar-section-title,
+.sidebar.theme-light .sidebar-section-title {
   color: rgba(75, 92, 118, 0.8);
   border-bottom: 1px solid rgba(150, 168, 196, 0.35);
 }
@@ -1500,6 +1505,10 @@ html, body {
 .app-root.theme-light .settings-checklist .form-check-label,
 .app-root.theme-light .strategy-radio .form-check-label,
 .app-root.theme-light .settings-option-btn,
+.sidebar.theme-light .settings-radio .form-check-label,
+.sidebar.theme-light .settings-checklist .form-check-label,
+.sidebar.theme-light .strategy-radio .form-check-label,
+.sidebar.theme-light .settings-option-btn,
 .app-root.theme-light .product-pill {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(233, 239, 249, 0.92));
   border-color: rgba(150, 168, 196, 0.45);
@@ -1514,6 +1523,14 @@ html, body {
 .app-root.theme-light .strategy-radio .form-check-input:focus + label,
 .app-root.theme-light .settings-option-btn:hover,
 .app-root.theme-light .settings-option-btn:focus-visible,
+.sidebar.theme-light .settings-radio .form-check-label:hover,
+.sidebar.theme-light .settings-checklist .form-check-label:hover,
+.sidebar.theme-light .settings-radio .form-check-input:focus + label,
+.sidebar.theme-light .settings-checklist .form-check-input:focus + label,
+.sidebar.theme-light .strategy-radio .form-check-label:hover,
+.sidebar.theme-light .strategy-radio .form-check-input:focus + label,
+.sidebar.theme-light .settings-option-btn:hover,
+.sidebar.theme-light .settings-option-btn:focus-visible,
 .app-root.theme-light .product-pill:hover,
 .app-root.theme-light .product-pill:focus-visible {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(224, 233, 248, 0.94));
@@ -1523,6 +1540,9 @@ html, body {
 .app-root.theme-light .settings-radio .form-check-input:checked + label,
 .app-root.theme-light .settings-checklist .form-check-input:checked + label,
 .app-root.theme-light .strategy-radio .form-check-input:checked + label,
+.sidebar.theme-light .settings-radio .form-check-input:checked + label,
+.sidebar.theme-light .settings-checklist .form-check-input:checked + label,
+.sidebar.theme-light .strategy-radio .form-check-input:checked + label,
 .app-root.theme-light .product-pill.active,
 .app-root.theme-light .product-pill:active {
   background: linear-gradient(135deg, rgba(58, 134, 255, 0.92), rgba(96, 162, 255, 0.9)) !important;
